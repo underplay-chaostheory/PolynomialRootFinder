@@ -1,0 +1,6 @@
+1
+data/test_result_rd/w_1.5/test_rd_0.001.csv
+0.001
+1.500
+test_set/test_set_rd/test_rd_20.txt
+40
