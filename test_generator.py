@@ -4,6 +4,8 @@ from math import*
 
 from Complex import*
 
+root_path = ""
+
 '''file format V1:
     number of polynomials
     degree of P0
@@ -53,7 +55,7 @@ def random_complexe(maxmod = 1):
 
 
 def create_test_ud_v1(number, degree, eps):
-    file_name = "D:/wamp/www/TIPE/Root_finder/test_set/test_set_ud/test_v1_ud_{}_{}.txt".format(degree, eps)
+    file_name = root_path + "/test_set/test_set_ud/test_v1_ud_{}_{}.txt".format(degree, eps)
     #eps refers here as the minimum distance beetween 2 roots
     
     file = open(file_name, "w")
@@ -76,7 +78,7 @@ def create_test_ud_v1(number, degree, eps):
 
 def create_test_ud_v2(number, degree, eps):
     #eps refers here as the minimum distance beetween 2 roots
-    file_name = "D:/wamp/www/TIPE/Root_finder/test_set/test_set_ud_v2/test_ud_v2_{}.txt".format(degree)
+    file_name = root_path + "/test_set/test_set_ud_v2/test_ud_v2_{}.txt".format(degree)
     
     file = open(file_name, "w")
     file.write(str(number) + "\n")
@@ -100,7 +102,7 @@ def create_test_ud_v2(number, degree, eps):
 
 
 def create_test_rd_v1(number, degree):
-    file_name = "D:/wamp/www/TIPE/Root_finder/test_set/test_set_rd/test_rd_{}.txt".format(degree)
+    file_name = root_path + "/test_set/test_set_rd/test_rd_{}.txt".format(degree)
 
     file = open(file_name, "w")
     file.write(str(number) + "\n")
@@ -133,7 +135,7 @@ generate_test_ud_v2()
 def create_params(version, degmin, degmax, kmin, kmax, precision, EPS, name, mode, relaxation = 1):
     #EPS refers here to the asked precision, and precision to the minimal distance beetween 2 roots in case of mode = 'ud'
 
-    filename = "D:/wamp/www/TIPE/Root_finder/" + name + ".txt"
+    filename = root_path + "/ + name + ".txt"
     with open(filename, 'w', newline='', encoding='utf-8') as file:
         nb_test = (kmax - kmin + 1) * (degmax - degmin + 1)
         if version == 1:
