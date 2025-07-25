@@ -39,11 +39,46 @@ polynomial* get_polynomial(test* t){
             double y;
             fscanf(t->test_file, "%lf", &x);
             fscanf(t->test_file, "%lf", &y);
-            free_complexe(p->coefficients[i]);
-            p->coefficients[i] = new_complexe_ref(x,y);
+            complexe* z = new_complexe_ref(x,y);
+            set_p_i(p, z, i);
+            free_complexe(z);
         }
-        free_complexe(p->coefficients[p->degree]);
-        p->coefficients[p->degree] = new_complexe_ref(1,0);
+        complexe* unite = new_complexe_ref(1,0);
+        set_p_i(p, unite, p->degree);
+        free_complexe(unite);
+
+        t->nb_get ++;
+        return p;
+    }else{
+        t->pol_degree = -1;
+        return new_polynomial(-1);
+    }
+}
+
+polynomial* get_polynomial_v2(test* t){
+    if(t->nb_get > t->nb_test){
+        polynomial* p = new_polynomial(-1);
+        t->pol_degree = -1;
+        return p;
+    }
+    if(fscanf(t->test_file, "%d\n", &(t->pol_degree))){
+        polynomial* p = new_polynomial(t->pol_degree);
+        for(int i = 0; i < t->pol_degree; i++){
+            char s[100];
+            fgets(s, 100, t->test_file);
+        }
+        for(int i = 0; i < t->pol_degree; i++){
+            double x;
+            double y;
+            fscanf(t->test_file, "%lf", &x);
+            fscanf(t->test_file, "%lf", &y);
+            complexe* z = new_complexe_ref(x,y);
+            set_p_i(p, z, i);
+            free_complexe(z);
+        }
+        complexe* unite = new_complexe_ref(1,0);
+        set_p_i(p, unite, p->degree);
+        free_complexe(unite);
 
         t->nb_get ++;
         return p;
