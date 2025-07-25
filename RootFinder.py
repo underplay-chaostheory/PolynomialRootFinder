@@ -1,6 +1,6 @@
-import RationalComplex as RC
-import RCPolynomial as pol
-import RootFinderLib as lib
+import lib/RationalComplex as RC
+import lib/RCPolynomial as pol
+import lib/RootFinderLib as lib
 import math
 
 def root_finder(p : pol.RCPolynomial, EPS : float, ITERATION_LOOP : int, w : float = 1.0, N_jump : int = 1) -> list[RC.RComplex]:
