@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from math import *
 from collections import defaultdict
 import csv
+from Complex import *
+
+root_path = ""
 
 def unique_value(attribute, data):
     values = []
@@ -36,28 +39,91 @@ def get_attribute(attribute, data):
         values.append(float(test[attribute]))
     return values
 
-def fetch(files, precision):
+def fetch(files, version, precision):
     nb_failed = 0
     nb_tot = 0
     succes = []
-    for file in files:
-        with open(file, "r", newline='', encoding='utf-8') as f:
-            data = csv.DictReader(f, ["k", "max_error", "degree", "NM_iterations", "exec_time"], delimiter=';')
-            for test in data:
-                if test['max_error'] == 'inf' or(float(test['max_error']) > precision or float(test['max_error']) < 0):
-                    nb_failed +=1
-                else:
-                    succes.append(test)
-                nb_tot += 1
-    succes_rate = (nb_tot - nb_failed) / nb_tot
-    return succes, succes_rate
+    if version == 1:
+        for file in files:
+            with open(file, "r", newline='', encoding='utf-8') as f:
+                data = csv.DictReader(f, ["k", "max_error", "degree", "NM_iterations", "exec_time"], delimiter=';')
+                for test in data:
+                    if test['max_error'] == 'inf' or(float(test['max_error']) > precision or float(test['max_error']) < 0):
+                        nb_failed +=1
+                    else:
+                        succes.append(test)
+                    nb_tot += 1
+        succes_rate = (nb_tot - nb_failed) / nb_tot
+        return succes, succes_rate
+    if version == 2:
+        for file in files:
+            f = open(file, "r", encoding='utf-8')
+            line = f.readline()
+            while True:
+                if line == "New test file\n":
+                    test_filename = root_path + f.readline().strip()
+                    test_file = open(test_filename, "r", encoding='utf-8')
+                    nb_test = int(test_file.readline())
+                    for i in range(nb_test):
+                        #get data
+                        line = f.readline().strip() 
+                        nb_tot += 1
 
-def succes_rate(files, precision):
-    _, succes_rate = fetch(files, precision)
+                        #if test failed
+                        if line == "-1":
+                            nb_failed += 1
+                            d = int(test_file.readline().strip())
+                            for _ in range(3*d):
+                                test_file.readline()
+                            continue
+
+                        #if test didn't failed
+                        perf = line.split(";")
+                        test = {"k" : int(perf[0]),
+                                "degree" : int(perf[1]),
+                                "NM_iterations" : int(perf[2]),
+                                "exec_time" : float(perf[3]),
+                                "max_error" : -1}
+                        roots_founded = []
+                        for _ in range(test["degree"]):
+                            root = f.readline().strip().split("+i")
+                            roots_founded.append(Complex(float(root[0]), float(root[1])))
+
+                        #get polynomial
+                        coefficients = []
+                        d = int(test_file.readline().strip())
+                        if d != test['degree']:
+                            raise ValueError
+                        for _ in range(d):
+                            test_file.readline()
+                        for _ in range(d):
+                            re = float(test_file.readline().strip())
+                            im = float(test_file.readline().strip())
+                            coefficients.append(Complex(re,im))
+                        coefficients.append(Complex(1,0))
+
+                        #compute max_error
+                        for approx_root in roots_founded:
+                            z = horner(coefficients, approx_root)
+                            if z.mod() >= test["max_error"]:
+                                test["max_error"] = z.mod()
+                            
+                        #add test
+                        succes.append(test)
+                else:
+                    break
+            f.close()
+
+        succes_rate = (nb_tot - nb_failed) / nb_tot
+        return succes, succes_rate
+                
+
+def succes_rate(files, version, precision):
+    _, succes_rate = fetch(files, version, precision)
     print("Succes rate : {:.3f}".format(succes_rate))
 
-def chart(files, precision):
-    data, _ = fetch(files, precision)
+def chart(files, version, precision):
+    data, _ = fetch(files, version, precision)
     
     degree = unique_value('degree', data)
     degree = np.sort(np.array(list(map(int, degree))))
@@ -109,8 +175,8 @@ def chart(files, precision):
     plt.tight_layout()
     plt.show()
 
-def exec_time_vs_nmi_vs_k(files, precision):
-    succes, _ = fetch(files, precision)
+def exec_time_vs_nmi_vs_k(files, version, precision):
+    succes, _ = fetch(files, version, precision)
     group = defaultdict(lambda: defaultdict(list))
     
     for row in succes:
@@ -133,8 +199,8 @@ def exec_time_vs_nmi_vs_k(files, precision):
     plt.grid()
     plt.show()
 
-def degree_vs_nmi_vs_k(files, precision):
-    succes, _ = fetch(files, precision)
+def degree_vs_nmi_vs_k(files, version, precision):
+    succes, _ = fetch(files, version, precision)
     group = defaultdict(lambda: defaultdict(list))
     
     for row in succes:
@@ -159,8 +225,8 @@ def degree_vs_nmi_vs_k(files, precision):
     plt.grid()
     plt.show()
 
-def degree_vs_exec_time_vs_k(files, precision):
-    succes, _ = fetch(files, precision)
+def degree_vs_exec_time_vs_k(files, version, precision):
+    succes, _ = fetch(files, version, precision)
     group = defaultdict(lambda: defaultdict(list))
     
     for row in succes:
@@ -185,10 +251,10 @@ def degree_vs_exec_time_vs_k(files, precision):
     plt.grid()
     plt.show()
 
-def degree_vs_exec_time_vs_file(files, precision):
+def degree_vs_exec_time_vs_file(files, version, precision):
     i = 0
     for file,label in files:
-        data, _ = fetch([file], precision)
+        data, _ = fetch([file], version, precision)
     
         degrees = unique_value('degree', data)
         degrees = np.sort(np.array(list(map(int, degrees))))
@@ -205,14 +271,14 @@ def degree_vs_exec_time_vs_file(files, precision):
     plt.show()
 
 
-#succes_rate(["D:/wamp/www/TIPE/Root_finder/data/Condition_arret/test_ud_dist_1e-09.csv"], 1e-09)
-#chart(["D:/wamp/www/TIPE/Root_finder/data/Njump/test_ud_1.csv"], 0.001)
-# chart([
-#     "D:/wamp/www/TIPE/Root_finder/data/test_ud_eval_0.001_cst.csv",
-#     "D:/wamp/www/TIPE/Root_finder/data/test_ud_eval_1e-06_cst.csv",
-#     "D:/wamp/www/TIPE/Root_finder/data/test_ud_eval_1e-09_cst.csv"], 0.001)
-#degree_vs_exec_time_vs_file([("D:/wamp/www/TIPE/Root_finder/data/w/test_ud_w_{}.csv".format(k),k) for k in [0.25,0.32,0.5,0.65,0.85,1.15,1.3,1.5]], 0.001)
-#degree_vs_exec_time_vs_k(["D:/wamp/www/TIPE/Root_finder/data/test_ud_20_1e-09.csv"], 1e-09)
+succes_rate([root_path + "/data/test_result_ud/test_ud_v2_0.001.txt"], 2, 1e-03)
+#chart([root_path + "/data/Njump/test_ud_1.csv"], 1, 0.001)
+#chart([
+#     root_path + "/data/test_ud_eval_0.001_cst.csv",
+#     root_path + "/data/test_ud_eval_1e-06_cst.csv",
+#     root_path + "/data/test_ud_eval_1e-09_cst.csv"], 1, 0.001)
+#degree_vs_exec_time_vs_file([(root_path + "/data/w/test_ud_w_{}.csv".format(k),k) for k in [0.25,0.32,0.5,0.65,0.85,1.15,1.3,1.5]], 0.001)
+#degree_vs_exec_time_vs_k([root_path + "/data/test_ud_20_1e-09.csv"], 1e-09)
 
 def tchebychev(n):
     dmin = 1
@@ -248,7 +314,7 @@ def result_test_tchebychev(file):
             d = np.max(np.abs(values - associate))
             print("Erreur maximale pour T{} : {}.\nTemps d'execution : {} s.\n".format(n, d, exec_time))
 
-result_test_tchebychev("D:/wamp/www/TIPE/Root_finder/data/tchebychev.csv")
+#result_test_tchebychev(root_path + "/data/tchebychev.csv")
 
 def result_rb(files, precision):
     degree = np.array([d for d in range(20, 50)])
@@ -290,4 +356,4 @@ def result_rb(files, precision):
     plt.tight_layout()
     plt.show()
 
-#result_rb(["D:/wamp/www/TIPE/Root_finder/data/test_rb_20_49_0.001.csv"], 0.001)
+#result_rb([root_path + "/data/test_rb_20_49_0.001.csv"], 0.001)
