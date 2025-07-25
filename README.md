@@ -22,3 +22,5 @@ L'implémentation est la suivante :
 Les tests montrent que les calculs avec des nombres à virgule flottante sont beaucoup trop imprécis dans se contexte (ou l'évaluation du polynôme doit être très faible, donc il faut que les termes se compensent).
 
 Pour mieux tester l'algorithme, une implémentation Python calculant des approximations des complexes de l'ensemble $S_d$ et des coefficients des polynômes par des complexes à parties réelles et imaginaires rationnelles, et n'effectuant que des calculs exactes est à venir.
+
+Cette version rencontre des difficultés car les numérateurs/dénominateurs des fractions deviennent trop grand rapidement.
