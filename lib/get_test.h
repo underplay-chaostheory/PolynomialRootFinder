@@ -17,5 +17,6 @@ typedef struct test test;
 test* get_test_file(char* file_name);
 void close_test(test* t);
 polynomial* get_polynomial(test* t);
+polynomial* get_polynomial_v2(test* t);
 
 #endif
